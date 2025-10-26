@@ -18,6 +18,18 @@ vim config.toml # Define the configurations for the project.
 poetry env activate
 ```
 
+## config.toml Format
+```toml
+course_id = "12345"
+assignment_id = "123456"
+token_file = ".secrets/canvas_api_token"
+eb_days = 2
+base_url = "https://myschool.instructure.com"
+eb_mult = 1.02
+cache_path = ".students.cache"
+eb_due_date = "2025-10-23T03:59:59Z" # UTC
+```
+
 ## Usage
 
 ```bash

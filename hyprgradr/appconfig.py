@@ -9,6 +9,7 @@ class AppConfig(BaseModel):
     assignment_id: int
     token_file: FilePath
     eb_days: int
+    eb_due_date: str
     base_url: str
     eb_mult: float
     cache_path: FilePath

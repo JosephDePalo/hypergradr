@@ -18,24 +18,23 @@ def update_submission(**kwargs):
     student_id = kwargs["students"][student_name]
     submission = Submission(kwargs["config"], student_id, student_name)
 
+    grade = args.grade
+    if args.interactive_grade:
+        grade = int(input("Input the base grade: "))
+    if submission.has_eb():
+        grade *= kwargs["config"].eb_mult
+        print("EB applied")
+
+    file_ids = []
+    for file in args.file:
+        print(f"Uploaded {file}")
+        file_ids.append(submission.upload_file_for_student(file))
+
     comment = args.comment
     if args.interactive_comment:
         print("--- BEGIN COMMENT ---")
         comment = sys.stdin.read()
         print("--- END COMMENT ---")
 
-    file_id = None
-    if args.file:
-        print(f"Uploaded {args.file}")
-        file_id = submission.upload_file_for_student(args.file)
-
-    grade = args.grade
-    try:
-        if submission.has_eb():
-            grade *= kwargs["config"].eb_mult
-            print("EB applied")
-    except Exception as _:
-        pass
-
-    submission.update_submission(comment, file_id, grade)
+    submission.update_submission(comment, file_ids, grade)
     print("Submission updated")

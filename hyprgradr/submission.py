@@ -65,7 +65,7 @@ class Submission:
 
         return file_id
 
-    def update_submission(self, text=None, file_id=None, grade=None):
+    def update_submission(self, text=None, file_ids=None, grade=None):
         comment_url = (
             f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/"
             f"{self.config.assignment_id}/submissions/{self.student_id}"
@@ -73,8 +73,8 @@ class Submission:
         comment_data = {}
         if text:
             comment_data["comment[text_comment]"] = text
-        if file_id:
-            comment_data["comment[file_ids][]"] = file_id
+        if file_ids:
+            comment_data["comment[file_ids][]"] = file_ids
         if grade:
             comment_data["submission[posted_grade]"] = grade
 
@@ -125,14 +125,17 @@ class Submission:
         submitted_at = submission.get("submitted_at")
         submitted_dt = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
 
-        assignment_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}"
-        resp = requests.get(assignment_url, headers=self.headers)
-        resp.raise_for_status()
-        assignment = resp.json()
+        # assignment_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}"
+        # resp = requests.get(assignment_url, headers=self.headers)
+        # resp.raise_for_status()
+        # assignment = resp.json()
+        #
+        # due_at = assignment.get("due_at")
+        eb_dt = datetime.fromisoformat(self.config.eb_due_date.replace("Z", "+00:00"))
 
-        due_at = assignment.get("due_at")
-        due_dt = datetime.fromisoformat(due_at.replace("Z", "+00:00"))
-
-        time_diff = due_dt - submitted_dt
-
-        return time_diff > timedelta(days=self.config.eb_days)
+        print(submitted_dt)
+        print(eb_dt)
+        return submitted_dt < eb_dt
+        # time_diff = due_dt - submitted_dt
+        #
+        # return time_diff > timedelta(days=self.config.eb_days)

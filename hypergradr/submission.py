@@ -36,7 +36,9 @@ class Submission:
             "content_type": mimetypes.guess_type(file_path)[0],
         }
 
-        init_resp = requests.post(init_url, headers=self.headers, data=init_data)
+        init_resp = requests.post(
+            init_url, headers=self.headers, data=init_data
+        )
         init_resp.raise_for_status()
         init_info = init_resp.json()
 
@@ -123,7 +125,9 @@ class Submission:
         submission = resp.json()
 
         submitted_at = submission.get("submitted_at")
-        submitted_dt = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
+        submitted_dt = datetime.fromisoformat(
+            submitted_at.replace("Z", "+00:00")
+        )
 
         # assignment_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}"
         # resp = requests.get(assignment_url, headers=self.headers)
@@ -131,7 +135,9 @@ class Submission:
         # assignment = resp.json()
         #
         # due_at = assignment.get("due_at")
-        eb_dt = datetime.fromisoformat(self.config.eb_due_date.replace("Z", "+00:00"))
+        eb_dt = datetime.fromisoformat(
+            self.config.eb_due_date.replace("Z", "+00:00")
+        )
 
         print(submitted_dt)
         print(eb_dt)

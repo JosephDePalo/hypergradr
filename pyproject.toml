@@ -1,9 +1,9 @@
 [project]
-name = "hyprgradr"
+name = "hypergradr"
 version = "0.1.0"
 description = ""
 authors = [
-    {name = "Joseph DePalo",email = "jdepalo@proton.me"}
+    {name = "Joseph DePalo",email = "jdepalo@stevens.edu"}
 ]
 readme = "README.md"
 requires-python = ">=3.13"

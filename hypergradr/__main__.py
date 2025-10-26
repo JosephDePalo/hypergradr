@@ -30,7 +30,9 @@ def build_parser():
     update_parser.add_argument("-g", "--grade", type=float)
     update_parser.add_argument("-G", "--interactive-grade", action="store_true")
     update_parser.add_argument("-c", "--comment")
-    update_parser.add_argument("-C", "--interactive-comment", action="store_true")
+    update_parser.add_argument(
+        "-C", "--interactive-comment", action="store_true"
+    )
     update_parser.add_argument("-f", "--file", action="append")
     update_parser.set_defaults(func=hndl.update_submission)
 

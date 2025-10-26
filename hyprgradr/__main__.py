@@ -1,7 +1,7 @@
 import argparse
 import tomllib
 
-from pydantic import BaseModel, FilePath
+from pydantic import BaseModel, FilePath, ValidationError
 from typing import Optional
 
 from . import subcmd_handlers as hndl
@@ -44,8 +44,12 @@ class Config(BaseModel):
 
 
 def main():
-    args = build_parser().parse_args()
-    config = Config.from_args(args)
+    parser = build_parser()
+    args = parser.parse_args()
+    try:
+        config = Config.from_args(args)
+    except (ValidationError, ValueError) as e:
+        parser.error(f"Configuration error:\n{e}")
 
     args.func(args, config)
 

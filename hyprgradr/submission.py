@@ -2,25 +2,29 @@ import os
 import mimetypes
 from datetime import datetime, timedelta
 from pathlib import Path
+import shutil
+import re
 
 import requests
 
-BASE_URL = "https://sit.instructure.com"
-EB_DAYS = 2
+
+def normalize_name(s):
+    return re.sub(r"\s|\-|,", "", s.lower())
 
 
 class Submission:
-    def __init__(self, course_id, assignment_id, student_id, api_token) -> None:
-        self.course_id = course_id
-        self.assignment_id = assignment_id
+    def __init__(self, config, student_id, student_name) -> None:
+        self.config = config
         self.student_id = student_id
+        self.student_name = normalize_name(student_name)
+        api_token = open(config.token_file, "r").read().strip()
         self.headers = {"Authorization": f"Bearer {api_token}"}
 
     def upload_file_for_student(self, file_path):
         # Initiate upload
         init_url = (
-            f"{BASE_URL}/api/v1/courses/{self.course_id}/assignments/"
-            f"{self.assignment_id}/submissions/{self.student_id}/comments/files"
+            f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/"
+            f"{self.config.assignment_id}/submissions/{self.student_id}/comments/files"
         )
 
         file_name = os.path.basename(file_path)
@@ -63,8 +67,8 @@ class Submission:
 
     def update_submission(self, text, file_ids, grade):
         comment_url = (
-            f"{BASE_URL}/api/v1/courses/{self.course_id}/assignments/"
-            f"{self.assignment_id}/submissions/{self.student_id}"
+            f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/"
+            f"{self.config.assignment_id}/submissions/{self.student_id}"
         )
         comment_data = {
             "comment[text_comment]": text,
@@ -78,15 +82,24 @@ class Submission:
         comment_resp.raise_for_status()
 
     def get_student_submissions(self):
-        submission_url = f"{BASE_URL}/api/v1/courses/{self.course_id}/assignments/{self.assignment_id}/submissions/{self.student_id}"
+        submission_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}/submissions/{self.student_id}"
         resp = requests.get(submission_url, headers=self.headers)
         resp.raise_for_status()
         submission = resp.json()
 
         attachments = submission.get("attachments", [])
-        submission_dir_path = Path(f"./{self.student_id}")
+
+        submission_dir_path = Path(f"{self.student_name}")
         if attachments:
-            submission_dir_path.mkdir()
+            if submission_dir_path.exists():
+                for item in submission_dir_path.iterdir():
+                    if item.is_dir():
+                        shutil.rmtree(item)
+                    else:
+                        item.unlink()
+            else:
+                submission_dir_path.mkdir(parents=True)
+
         for att in attachments:
             file_name = att["filename"]
             file_url = att["url"]
@@ -98,8 +111,8 @@ class Submission:
             with open(submission_dir_path / file_name, "wb") as f:
                 f.write(file_resp.content)
 
-    def has_eb(self, days_before_deadline=EB_DAYS):
-        submission_url = f"{BASE_URL}/api/v1/courses/{self.course_id}/assignments/{self.assignment_id}/submissions/{self.student_id}"
+    def has_eb(self):
+        submission_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}/submissions/{self.student_id}"
         resp = requests.get(submission_url, headers=self.headers)
         resp.raise_for_status()
         submission = resp.json()
@@ -107,7 +120,7 @@ class Submission:
         submitted_at = submission.get("submitted_at")
         submitted_dt = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
 
-        assignment_url = f"{BASE_URL}/api/v1/courses/{self.course_id}/assignments/{self.assignment_id}"
+        assignment_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}"
         resp = requests.get(assignment_url, headers=self.headers)
         resp.raise_for_status()
         assignment = resp.json()
@@ -117,4 +130,4 @@ class Submission:
 
         time_diff = due_dt - submitted_dt
 
-        return time_diff > timedelta(days=days_before_deadline)
+        return time_diff > timedelta(days=self.config.eb_days)

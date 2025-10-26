@@ -20,15 +20,16 @@ def update_submission(**kwargs):
 
     grade = args.grade
     if args.interactive_grade:
-        grade = int(input("Input the base grade: "))
+        grade = float(input("Input the base grade: "))
     if submission.has_eb():
         grade *= kwargs["config"].eb_mult
         print("EB applied")
 
     file_ids = []
-    for file in args.file:
-        print(f"Uploaded {file}")
-        file_ids.append(submission.upload_file_for_student(file))
+    if args.file:
+        for file in args.file:
+            print(f"Uploaded {file}")
+            file_ids.append(submission.upload_file_for_student(file))
 
     comment = args.comment
     if args.interactive_comment:

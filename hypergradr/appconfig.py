@@ -1,7 +1,7 @@
 import tomllib
 import argparse
 
-from pydantic import BaseModel, FilePath, ValidationError
+from pydantic import BaseModel, FilePath
 
 
 class AppConfig(BaseModel):

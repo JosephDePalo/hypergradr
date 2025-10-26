@@ -1,6 +1,6 @@
 import os
 import mimetypes
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 import shutil
 import re
@@ -23,8 +23,9 @@ class Submission:
     def upload_file_for_student(self, file_path):
         # Initiate upload
         init_url = (
-            f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/"
-            f"{self.config.assignment_id}/submissions/{self.student_id}/comments/files"
+            f"{self.config.base_url}/api/v1/courses/{self.config.course_id}"
+            f"/assignments/{self.config.assignment_id}/submissions/"
+            f"{self.student_id}/comments/files"
         )
 
         file_name = os.path.basename(file_path)
@@ -36,7 +37,9 @@ class Submission:
             "content_type": mimetypes.guess_type(file_path)[0],
         }
 
-        init_resp = requests.post(init_url, headers=self.headers, data=init_data)
+        init_resp = requests.post(
+            init_url, headers=self.headers, data=init_data
+        )
         init_resp.raise_for_status()
         init_info = init_resp.json()
 
@@ -67,15 +70,16 @@ class Submission:
 
     def update_submission(self, text=None, file_ids=None, grade=None):
         comment_url = (
-            f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/"
-            f"{self.config.assignment_id}/submissions/{self.student_id}"
+            f"{self.config.base_url}/api/v1/courses/{self.config.course_id}"
+            f"/assignments/{self.config.assignment_id}"
+            f"/submissions/{self.student_id}"
         )
         comment_data = {}
         if text:
             comment_data["comment[text_comment]"] = text
         if file_ids:
             comment_data["comment[file_ids][]"] = file_ids
-        if grade:
+        if grade is not None:
             comment_data["submission[posted_grade]"] = grade
 
         if not comment_data:
@@ -87,7 +91,11 @@ class Submission:
         comment_resp.raise_for_status()
 
     def get_student_submissions(self):
-        submission_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}/submissions/{self.student_id}"
+        submission_url = (
+            f"{self.config.base_url}/api/v1/courses/"
+            f"{self.config.course_id}/assignments/"
+            f"{self.config.assignment_id}/submissions/{self.student_id}"
+        )
         resp = requests.get(submission_url, headers=self.headers)
         resp.raise_for_status()
         submission = resp.json()
@@ -117,23 +125,22 @@ class Submission:
                 f.write(file_resp.content)
 
     def has_eb(self):
-        submission_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}/submissions/{self.student_id}"
+        submission_url = (
+            f"{self.config.base_url}/api/v1/courses/"
+            f"{self.config.course_id}/assignments/"
+            f"{self.config.assignment_id}/submissions/{self.student_id}"
+        )
         resp = requests.get(submission_url, headers=self.headers)
         resp.raise_for_status()
         submission = resp.json()
 
         submitted_at = submission.get("submitted_at")
-        submitted_dt = datetime.fromisoformat(submitted_at.replace("Z", "+00:00"))
+        submitted_dt = datetime.fromisoformat(
+            submitted_at.replace("Z", "+00:00")
+        )
 
-        # assignment_url = f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/{self.config.assignment_id}"
-        # resp = requests.get(assignment_url, headers=self.headers)
-        # resp.raise_for_status()
-        # assignment = resp.json()
-        #
-        # due_at = assignment.get("due_at")
-        eb_dt = datetime.fromisoformat(self.config.eb_due_date.replace("Z", "+00:00"))
+        eb_dt = datetime.fromisoformat(
+            self.config.eb_due_date.replace("Z", "+00:00")
+        )
 
         return submitted_dt < eb_dt
-        # time_diff = due_dt - submitted_dt
-        #
-        # return time_diff > timedelta(days=self.config.eb_days)

@@ -65,16 +65,21 @@ class Submission:
 
         return file_id
 
-    def update_submission(self, text, file_ids, grade):
+    def update_submission(self, text=None, file_id=None, grade=None):
         comment_url = (
             f"{self.config.base_url}/api/v1/courses/{self.config.course_id}/assignments/"
             f"{self.config.assignment_id}/submissions/{self.student_id}"
         )
-        comment_data = {
-            "comment[text_comment]": text,
-            "comment[file_ids][]": file_ids,
-            "submission[posted_grade]": grade,
-        }
+        comment_data = {}
+        if text:
+            comment_data["comment[text_comment]"] = text
+        if file_id:
+            comment_data["comment[file_ids][]"] = file_id
+        if grade:
+            comment_data["submission[posted_grade]"] = grade
+
+        if not comment_data:
+            raise Exception("Must specify a comment, file, or grade.")
 
         comment_resp = requests.put(
             comment_url, headers=self.headers, data=comment_data

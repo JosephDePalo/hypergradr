@@ -24,6 +24,15 @@ def build_parser():
     )
     download_parser.set_defaults(func=hndl.download_submission)
 
+    update_parser = subparsers.add_parser(
+        "update", help="Update a student's submission details"
+    )
+    update_parser.add_argument("-g", "--grade")
+    update_parser.add_argument("-c", "--comment")
+    update_parser.add_argument("-f", "--file")
+    update_parser.add_argument("-i", "--interactive-comment", action="store_true")
+    update_parser.set_defaults(func=hndl.update_submission)
+
     return parser
 
 

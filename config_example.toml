@@ -1,0 +1,8 @@
+course_id = "12345"
+assignment_id = "123456"
+token_file = ".secrets/canvas_api_token"
+base_url = "https://myschool.instructure.com"
+eb_days = 2
+eb_mult = 1.02
+eb_due_date = "2025-10-23T03:59:59Z" # UTC
+cache_path = ".students.cache"
